@@ -37,13 +37,3 @@ fun CustomTabs() {
         }
     }
 }
-
-
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    MemoruTheme {
-        CustomTabs()
-    }
-}

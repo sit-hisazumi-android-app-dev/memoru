@@ -70,11 +70,3 @@ fun AddTaskForm(modifier: Modifier = Modifier){
         }
     }
 }
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    MemoruTheme {
-        AddTaskForm()
-    }
-}

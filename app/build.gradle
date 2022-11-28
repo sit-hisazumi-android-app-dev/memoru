@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId "com.sit_hisazumi_android_app_dev"
-        minSdk 24
+        minSdk 32
         targetSdk 32
         versionCode 1
         versionName "1.0"

@@ -5,4 +5,5 @@ import java.util.*
 
 enum class TaskKind { TODO,MEMO }
 
+@kotlinx.serialization.Serializable
 data class Task(var id:String = UUID.randomUUID().toString(), val title:String, val date:LocalDateTime?, val kind: TaskKind)

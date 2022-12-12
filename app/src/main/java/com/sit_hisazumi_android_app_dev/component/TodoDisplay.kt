@@ -34,10 +34,7 @@ fun TODODisplay(repository: ITaskRepository, item: Task){
         background = {
             val direction = dismissState.dismissDirection ?: return@SwipeToDismiss
             val color by animateColorAsState(
-                targetValue = when (dismissState.targetValue) {
-                    DismissValue.DismissedToEnd -> Color.Red
-                    else -> Color.LightGray
-                }
+                targetValue = Color.Red
             )
 
             val icon = when(direction){

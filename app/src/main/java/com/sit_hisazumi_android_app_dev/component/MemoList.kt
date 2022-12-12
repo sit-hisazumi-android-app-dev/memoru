@@ -1,31 +1,22 @@
 package com.sit_hisazumi_android_app_dev.component
 
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import com.sit_hisazumi_android_app_dev.entity.Task
+import com.sit_hisazumi_android_app_dev.repository.ITaskRepository
 import com.sit_hisazumi_android_app_dev.repository.MemoRepositoryMock
 import kotlinx.coroutines.flow.onEach
 
 @ExperimentalMaterialApi
 @Composable
-fun MemoList(){
-    val todos = remember{
-        mutableStateListOf<Task>()
-    }
+fun MemoList(dataSource: ITaskRepository){
+    val list = dataSource.findAll().collectAsState(initial = listOf())
 
-    val mock = MemoRepositoryMock()
-    LaunchedEffect(Unit){
-        mock.findAll().onEach { it ->
-            it.onEach { it ->
-                todos.add(it)
-            }
+    LazyColumn {
+        items(list.value){ memo ->
+            TODODisplay(repository = dataSource, item = memo)
         }
-    }
-
-    todos.map { it ->
-        TODODisplay(repository = mock, item = it)
     }
 }

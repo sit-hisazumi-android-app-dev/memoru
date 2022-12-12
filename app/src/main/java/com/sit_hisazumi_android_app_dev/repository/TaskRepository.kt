@@ -26,17 +26,6 @@ interface ITaskRepository {
 }
 
 class MemoRepository: ITaskRepository {
-    override suspend fun save(tasks: List<Task>) {
-        TODO("Not yet implemented")
-    }
-
-    override fun findAll(): Flow<List<Task>> {
-        TODO("Not yet implemented")
-    }
-
-}
-
-class TodoRepository: ITaskRepository {
     lateinit var dataStore: DataStore<Preferences>;
 
     //ここにMainActivity.ktからのcreateDataStoreが入る
@@ -44,9 +33,9 @@ class TodoRepository: ITaskRepository {
         this.dataStore = dataStore
     }
 
-    //TODOまたはMEMOをキーとする
+    //MEMOをキーとする
     private object PreferenceKeys {
-        val TaskKindName = preferencesKey<String>("ToDo")
+        val TaskKindName = preferencesKey<String>("MEMO")
     }
 
     //jsonContentはjson文字列化されたデータ
@@ -56,10 +45,52 @@ class TodoRepository: ITaskRepository {
         }
     }
 
-    //json文字列にして保存する
+    //MEMOの場合は日付がnullとなるので、それを取り除いてjson文字列にする。
+    override suspend fun save(tasks: List<Task>) {
+        val format = Json {encodeDefaults = false}
+        var jsonContent = format.encodeToString(tasks)
+        updateName(jsonContent)
+    }
+
+    override fun findAll(): Flow<List<Task>> {
+        return dataStore.data
+            .catch { exception ->
+                if (exception is IOException) {
+                    emit(emptyPreferences())
+                } else {
+                    throw exception
+                }
+            }.map { preferences ->
+                Json.decodeFromString<List<Task>>(preferences[MemoRepository.PreferenceKeys.TaskKindName] ?: "Not Found")
+            }
+    }
+
+}
+
+//ToDoの内容を保存
+class TodoRepository: ITaskRepository {
+    lateinit var dataStore: DataStore<Preferences>;
+
+    //ここにMainActivity.ktからのcreateDataStoreが入る
+    constructor(dataStore: DataStore<Preferences>){
+        this.dataStore = dataStore
+    }
+
+    //TODOをキーとする
+    private object PreferenceKeys {
+        val TaskKindName = preferencesKey<String>("TODO")
+    }
+
+    //jsonContentはjson文字列化されたデータ
+    private suspend fun updateName(jsonContent: String) {
+        dataStore.edit {
+            it[PreferenceKeys.TaskKindName] = jsonContent
+        }
+    }
+
+    //json文字列にして保存する。
     override suspend fun save(tasks: List<Task>) {
         var jsonContent = Json.encodeToString(tasks)
-
         updateName(jsonContent)
     }
 

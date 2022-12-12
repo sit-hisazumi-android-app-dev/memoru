@@ -18,8 +18,8 @@ import java.io.IOException
 import java.time.LocalDateTime
 
 //MemoRepository と TodoRepositoryの2種類のレポジトリクラスを用意して、それぞれITaskRepositoryを実装する
-//MemoRepositoryのPreferences DataStore Nameは"memo_repository"
-//TodoRepositoryのPreferences DataStore Nameは"todo_repository"
+//MemoRepositoryのPreferences DataStore Nameは"MEMO"
+//TodoRepositoryのPreferences DataStore Nameは"TODO"
 interface ITaskRepository {
     suspend fun save(tasks: List<Task>)
     fun findAll() : Flow<List<Task>>
@@ -133,12 +133,11 @@ class TodoRepositoryMock: ITaskRepository{
 
     //書き込み
     override suspend fun save(tasks: List<Task>) {
-        var hoge = tasks
-        var jsonContent = Json.encodeToString(hoge)
+        var jsonContent = Json.encodeToString(tasks)
 
     }
 
-    //読み込み＆表示
+    //読み込み
     override fun findAll(): Flow<List<Task>> {
         return flow {
             listOf(

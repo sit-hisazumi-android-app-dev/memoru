@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.IOException
@@ -55,17 +56,15 @@ class TodoRepository: ITaskRepository {
         }
     }
 
-    //記録
+    //json文字列にして保存する
     override suspend fun save(tasks: List<Task>) {
-        var hoge = tasks
-        var jsonContent = Json.encodeToString(hoge)
+        var jsonContent = Json.encodeToString(tasks)
 
         updateName(jsonContent)
-        TODO("Not yet implemented")
     }
 
     override fun findAll(): Flow<List<Task>> {
-        val preferencesFlow: Flow<String> = dataStore.data
+        return dataStore.data
             .catch { exception ->
                 if (exception is IOException) {
                     emit(emptyPreferences())
@@ -73,10 +72,8 @@ class TodoRepository: ITaskRepository {
                     throw exception
                 }
             }.map { preferences ->
-                preferences[PreferenceKeys.TaskKindName] ?: "Not Found"
+                Json.decodeFromString<List<Task>>(preferences[PreferenceKeys.TaskKindName] ?: "Not Found")
             }
-
-        TODO("Not yet implemented")
     }
 
 }

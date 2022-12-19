@@ -1,10 +1,10 @@
 package com.sit_hisazumi_android_app_dev.repository
 
-import androidx.datastore.DataStore
-import androidx.datastore.preferences.Preferences
-import androidx.datastore.preferences.edit
-import androidx.datastore.preferences.emptyPreferences
-import androidx.datastore.preferences.preferencesKey
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.stringPreferencesKey
 import com.sit_hisazumi_android_app_dev.entity.Task
 import com.sit_hisazumi_android_app_dev.entity.TaskKind
 import kotlinx.coroutines.flow.Flow
@@ -37,7 +37,7 @@ class MemoRepository: ITaskRepository {
 
     //MEMOをキーとする
     private object PreferenceKeys {
-        val TaskKindName = preferencesKey<String>("MEMO")
+        val TaskKindName = stringPreferencesKey("MEMO")
     }
 
     //jsonContentはjson文字列化されたデータ
@@ -80,7 +80,7 @@ class TodoRepository: ITaskRepository {
 
     //TODOをキーとする
     private object PreferenceKeys {
-        val TaskKindName = preferencesKey<String>("TODO")
+        val TaskKindName = stringPreferencesKey("TODO")
     }
 
     //jsonContentはjson文字列化されたデータ

@@ -4,12 +4,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.sit_hisazumi_android_app_dev.repository.MemoRepositoryMock
-import com.sit_hisazumi_android_app_dev.repository.TodoRepositoryMock
+import androidx.compose.ui.platform.LocalContext
+import com.sit_hisazumi_android_app_dev.repository.*
 
 @Composable
 @ExperimentalMaterialApi
@@ -19,20 +18,29 @@ fun Display(){
         mutableStateOf(0)
     }
 
-    val todoSource = TodoRepositoryMock()
-    val memoSource = MemoRepositoryMock()
+    val context = LocalContext.current
+
+    val todoSource = TodoRepository(context.dataStore)
+    val memoSource = MemoRepository(context.dataStore)
+
+    var todoList = todoSource.findAll().collectAsState(initial = listOf()).value
+    var memoList = memoSource.findAll().collectAsState(initial = listOf()).value
 
     Column {
         Box(contentAlignment = Alignment.BottomCenter){
             Column(modifier = Modifier.fillMaxHeight()) {
                 ChangeTab(tabIndex = tabIndex, onTabIndexChange = {tabIndex = it})
                 if(tabIndex == 0){
-                    TodoList(todoSource)
+                    TodoList(todoList,todoSource)
                 }else{
-                    MemoList(memoSource)
+                    MemoList(memoList,memoSource)
                 }
             }
-            AddTaskForm()
+            if(tabIndex == 1){
+                AddTaskForm(isMemo = true, list = todoList, repository = todoSource)
+            }else{
+                AddTaskForm(isMemo = false, list = memoList, repository = memoSource)
+            }
         }
     }
 

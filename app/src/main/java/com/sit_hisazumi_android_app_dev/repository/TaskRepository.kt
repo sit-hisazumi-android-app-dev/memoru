@@ -1,22 +1,23 @@
 package com.sit_hisazumi_android_app_dev.repository
 
+import android.content.Context
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
 import com.sit_hisazumi_android_app_dev.entity.Task
-import com.sit_hisazumi_android_app_dev.entity.TaskKind
+import com.sit_hisazumi_android_app_dev.repository.MemoRepository.PreferenceKeys.TaskKindName
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.IOException
-import java.time.LocalDateTime
 import java.util.*
 
 //MemoRepository と TodoRepositoryの2種類のレポジトリクラスを用意して、それぞれITaskRepositoryを実装する
@@ -26,6 +27,8 @@ interface ITaskRepository {
     suspend fun save(tasks: List<Task>)
     fun findAll() : Flow<List<Task>>
 }
+
+val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "stored_data")
 
 class MemoRepository: ITaskRepository {
     lateinit var dataStore: DataStore<Preferences>;
@@ -63,7 +66,7 @@ class MemoRepository: ITaskRepository {
                     throw exception
                 }
             }.map { preferences ->
-                Json.decodeFromString<List<Task>>(preferences[MemoRepository.PreferenceKeys.TaskKindName] ?: "Not Found")
+                Json.decodeFromString(preferences[TaskKindName] ?: "[]")
             }
     }
 
@@ -105,7 +108,7 @@ class TodoRepository: ITaskRepository {
                     throw exception
                 }
             }.map { preferences ->
-                Json.decodeFromString<List<Task>>(preferences[PreferenceKeys.TaskKindName] ?: "Not Found")
+                Json.decodeFromString(preferences[PreferenceKeys.TaskKindName] ?: "[]")
             }
     }
 
@@ -119,10 +122,10 @@ class MemoRepositoryMock: ITaskRepository{
 
     fun getList(): List<Task> {
         return listOf(
-            Task(UUID.randomUUID().toString(),"A",null,TaskKind.MEMO),
-            Task(UUID.randomUUID().toString(),"B",null,TaskKind.MEMO),
-            Task(UUID.randomUUID().toString(),"C",null,TaskKind.MEMO),
-            Task(UUID.randomUUID().toString(),"D",null,TaskKind.MEMO)
+            Task(UUID.randomUUID().toString(),"A",0),
+            Task(UUID.randomUUID().toString(),"B",0),
+            Task(UUID.randomUUID().toString(),"C",0),
+            Task(UUID.randomUUID().toString(),"D",0)
         )
     }
 
@@ -144,10 +147,10 @@ class TodoRepositoryMock: ITaskRepository{
     //読み込み
     override fun findAll(): Flow<List<Task>> {
         return listOf(listOf(
-            Task(UUID.randomUUID().toString(),"A",LocalDateTime.of(2022,1,1,1,1),TaskKind.TODO),
-            Task(UUID.randomUUID().toString(),"B",LocalDateTime.of(2022,2,1,1,1),TaskKind.TODO),
-            Task(UUID.randomUUID().toString(),"C",LocalDateTime.of(2022,4,1,1,1),TaskKind.TODO),
-            Task(UUID.randomUUID().toString(),"D",LocalDateTime.of(2022,11,1,1,1),TaskKind.TODO)
+            Task(UUID.randomUUID().toString(),"A",0),
+            Task(UUID.randomUUID().toString(),"B",0),
+            Task(UUID.randomUUID().toString(),"C",0),
+            Task(UUID.randomUUID().toString(),"D",0)
         )).asFlow()
     }
 }

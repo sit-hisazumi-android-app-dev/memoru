@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -14,11 +15,74 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import com.sit_hisazumi_android_app_dev.entity.Task
+import com.sit_hisazumi_android_app_dev.repository.ITaskRepository
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 
+private suspend fun addRecord(before:List<Task>, append:Task, repository: ITaskRepository){
+    repository.save(before+append)
+}
+
+
+@OptIn(DelicateCoroutinesApi::class)
 @Composable
-fun AddTaskForm(modifier: Modifier = Modifier){
+fun MyDialog(list:List<Task>,repository: ITaskRepository,onDismiss: () -> Unit) {
+    Dialog(onDismissRequest = onDismiss) {
+        Surface {
+            Column {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(all = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(all = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Button(
+                        onClick = onDismiss,
+                        colors = ButtonDefaults.textButtonColors(
+                            backgroundColor = Color.DarkGray,
+                            contentColor = Color.White,
+                            disabledContentColor = Color.LightGray
+                        )
+                    ){
+                        Text("キャンセル")
+                    }
+                    Button(
+                        onClick = {
+                             GlobalScope.async {
+                                 addRecord(list,Task(title = "", date = 0),repository)
+                             }
+                        },
+                    ){
+                        Text("追加")
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(DelicateCoroutinesApi::class)
+@Composable
+fun AddTaskForm(isMemo:Boolean,list:List<Task>,repository: ITaskRepository,modifier: Modifier = Modifier){
     var text by remember { mutableStateOf("") }
     val themeColor = Color(0, 117, 255)
+
+    var (showAddDialog,setShowAddDialog) = remember {
+        mutableStateOf(false)
+    }
+
     Box (
         Modifier
             .background(color = themeColor)
@@ -40,6 +104,13 @@ fun AddTaskForm(modifier: Modifier = Modifier){
                         modifier =
                         modifier.height(40.dp),
                         onClick = {
+                            if(isMemo) {
+                                setShowAddDialog(true)
+                            }else{
+                                GlobalScope.async {
+                                    addRecord(list,Task(title = "", date = 0),repository)
+                                }
+                            }
                         },
                         colors = ButtonDefaults.textButtonColors(
                             backgroundColor = Color.White,
@@ -65,7 +136,7 @@ fun AddTaskForm(modifier: Modifier = Modifier){
                             shape = RoundedCornerShape(5.dp),
                             modifier =
                             modifier
-                                .padding(start = 4.dp,end = 4.dp)
+                                .padding(start = 4.dp, end = 4.dp)
                                 .fillMaxWidth(),
                             value = text,
                             onValueChange = { text = it },
@@ -76,6 +147,12 @@ fun AddTaskForm(modifier: Modifier = Modifier){
                     }
                 }
             }
+        }
+    }
+
+    if(showAddDialog){
+        MyDialog(list,repository) {
+            setShowAddDialog(false)
         }
     }
 }

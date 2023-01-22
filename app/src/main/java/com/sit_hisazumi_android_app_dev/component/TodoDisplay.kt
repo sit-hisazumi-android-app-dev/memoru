@@ -13,20 +13,35 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.sit_hisazumi_android_app_dev.entity.Task
 import com.sit_hisazumi_android_app_dev.repository.ITaskRepository
+import com.sit_hisazumi_android_app_dev.repository.TodoRepository
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.map
+import java.text.SimpleDateFormat
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 @ExperimentalMaterialApi
 @Composable
-fun TODODisplay(repository: ITaskRepository, item: Task){
+fun TODODisplay(repository: ITaskRepository, item: Task,reload:@Composable () -> Unit){
+
+    var reloadState by remember{
+        mutableStateOf(false)
+    }
+
+    if (reloadState) {
+        reload()
+        reloadState = false
+    }
 
     val dismissState = rememberDismissState(
         confirmStateChange = {
-        if ( it == DismissValue.DismissedToEnd || it == DismissValue.DismissedToStart) {
-            repository.findAll().map { repo ->
-                repository.save(repo.filter { list -> list.id !=  item.id})
+            GlobalScope.async {
+                repository.findAll().collect{ repo->
+                    val data = repo.filter { list -> list.id !=  item.id}
+                    repository.save(data)
+                }
+                reloadState = true
             }
-        }
         true
     })
     
@@ -39,6 +54,7 @@ fun TODODisplay(repository: ITaskRepository, item: Task){
 
             val icon = when(direction){
                 DismissDirection.EndToStart -> "削除"
+                DismissDirection.StartToEnd -> "削除"
                 else -> {""}
             }
 
@@ -72,7 +88,10 @@ fun TODODisplay(repository: ITaskRepository, item: Task){
             ) {
                 Text(text = item.title)
                 Spacer(Modifier.size(16.dp))
-                item.date?.format(DateTimeFormatter.ISO_DATE_TIME)?.let { Text(text = it) }
+
+                if(repository is TodoRepository){
+                    Text(text = SimpleDateFormat("yyyy-MM-dd", Locale.JAPAN).format(Date(item.date)))
+                }
             }
         }
     }

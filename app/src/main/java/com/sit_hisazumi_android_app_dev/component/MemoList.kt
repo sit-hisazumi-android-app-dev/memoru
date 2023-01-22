@@ -11,11 +11,11 @@ import kotlinx.coroutines.flow.onEach
 
 @ExperimentalMaterialApi
 @Composable
-fun MemoList(list: List<Task>,dataSource: ITaskRepository){
+fun MemoList(list: List<Task>,dataSource: ITaskRepository,reload:@Composable () -> Unit){
 
     LazyColumn {
-        items(list){ todo ->
-            TODODisplay(repository = dataSource, item = todo)
+        items(list,{item:Task -> item.id}){ todo ->
+            TODODisplay(repository = dataSource, item = todo, reload = reload)
         }
     }
 }

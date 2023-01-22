@@ -37,9 +37,9 @@ fun Display(){
                 }
             }
             if(tabIndex == 1){
-                AddTaskForm(isMemo = true, list = todoList, repository = todoSource)
+                AddTaskForm(isMemo = true, list = memoList, repository = memoSource)
             }else{
-                AddTaskForm(isMemo = false, list = memoList, repository = memoSource)
+                AddTaskForm(isMemo = false, list = todoList, repository = todoSource)
             }
         }
     }

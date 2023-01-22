@@ -90,8 +90,9 @@ fun MyDialog(text:String,list:List<Task>,repository: ITaskRepository,onDismiss: 
                     Button(
                         onClick = {
                              GlobalScope.async {
-                                 addRecord(list,Task(title = text, date = 0),repository)
+                                 addRecord(list,Task(title = text, date = time),repository)
                              }
+                            onDismiss()
                         },
                     ){
                         Text("追加")
@@ -133,7 +134,7 @@ fun AddTaskForm(isMemo:Boolean,list:List<Task>,repository: ITaskRepository,modif
                         modifier =
                         modifier.height(40.dp),
                         onClick = {
-                            if(isMemo) {
+                            if(!isMemo) {
                                 setShowAddDialog(true)
                             }else{
                                 GlobalScope.async {

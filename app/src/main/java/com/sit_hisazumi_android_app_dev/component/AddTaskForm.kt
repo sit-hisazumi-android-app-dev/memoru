@@ -1,14 +1,16 @@
 package com.sit_hisazumi_android_app_dev.component
 
+import android.app.DatePickerDialog
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -21,7 +23,10 @@ import com.sit_hisazumi_android_app_dev.repository.ITaskRepository
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.util.*
 
 private suspend fun addRecord(before:List<Task>, append:Task, repository: ITaskRepository){
     repository.save(before+append)
@@ -30,7 +35,26 @@ private suspend fun addRecord(before:List<Task>, append:Task, repository: ITaskR
 
 @OptIn(DelicateCoroutinesApi::class)
 @Composable
-fun MyDialog(list:List<Task>,repository: ITaskRepository,onDismiss: () -> Unit) {
+fun MyDialog(text:String,list:List<Task>,repository: ITaskRepository,onDismiss: () -> Unit) {
+
+    val (time,setTime) = remember{ mutableStateOf(Date().time) }
+    val c = Calendar.getInstance()
+    val _year = c[Calendar.YEAR]
+    val _month = c[Calendar.MONTH]
+    val _day = c[Calendar.DAY_OF_MONTH]
+
+    val dialog = DatePickerDialog(
+        LocalContext.current,
+        { _, year, month, dayOfMonth ->
+            setTime(
+                LocalDateTime.of(year,month+1,dayOfMonth,0,0,0).toEpochSecond(ZoneOffset.ofHours(9))*1000
+            )
+        },
+        _year,
+        _month,
+        _day,
+    )
+
     Dialog(onDismissRequest = onDismiss) {
         Surface {
             Column {
@@ -48,6 +72,11 @@ fun MyDialog(list:List<Task>,repository: ITaskRepository,onDismiss: () -> Unit) 
                         .padding(all = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
+                    Box(modifier = Modifier.clickable {
+                        dialog.show()
+                    }){
+                        Text(SimpleDateFormat("yyyy-MM-dd", Locale.JAPAN).format(Date(time)))
+                    }
                     Button(
                         onClick = onDismiss,
                         colors = ButtonDefaults.textButtonColors(
@@ -61,7 +90,7 @@ fun MyDialog(list:List<Task>,repository: ITaskRepository,onDismiss: () -> Unit) 
                     Button(
                         onClick = {
                              GlobalScope.async {
-                                 addRecord(list,Task(title = "", date = 0),repository)
+                                 addRecord(list,Task(title = text, date = 0),repository)
                              }
                         },
                     ){
@@ -108,7 +137,7 @@ fun AddTaskForm(isMemo:Boolean,list:List<Task>,repository: ITaskRepository,modif
                                 setShowAddDialog(true)
                             }else{
                                 GlobalScope.async {
-                                    addRecord(list,Task(title = "", date = 0),repository)
+                                    addRecord(list,Task(title = text, date = 0),repository)
                                 }
                             }
                         },
@@ -151,7 +180,7 @@ fun AddTaskForm(isMemo:Boolean,list:List<Task>,repository: ITaskRepository,modif
     }
 
     if(showAddDialog){
-        MyDialog(list,repository) {
+        MyDialog(text,list,repository) {
             setShowAddDialog(false)
         }
     }
